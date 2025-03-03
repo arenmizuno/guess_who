@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: games
+#
+#  id         :bigint           not null, primary key
+#  player1    :integer
+#  player2    :integer
+#  status     :string
+#  winner     :bigint
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
 class Game < ApplicationRecord
   belongs_to :player_1, required: true, class_name: "User", foreign_key: "player1_id"
   belongs_to :player_2, required: true, class_name: "User", foreign_key: "player2_id"

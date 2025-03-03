@@ -1,0 +1,23 @@
+<h1>Guess Who!</h1>
+
+<p>This is an online version of Guess Who where you can add your own characters! </p>
+
+<hr>
+
+<% if user_signed_in? %>
+  <div>
+    <h2>Start Game</h2>
+    <a href="/game" class="btn btn-primary">
+      <button>Start Game</button>
+    </a>
+  </div>
+
+  <div>
+    <h2>Character List</h2>
+    <a href="/character_list" class="btn btn-secondary">
+      <button>Character List</button>
+    </a>
+  </div>
+<% else %>
+  <p>You must be <a href="/users/sign_in">signed in</a> to start a game or view the character list.</p>
+<% end %>

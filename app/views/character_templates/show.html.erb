@@ -1,0 +1,52 @@
+<h1>
+  Character #<%= @the_character.id %> details
+</h1>
+
+<div>
+  <a href="/characters">
+    Go back
+  </a>
+</div>
+
+<div>
+  <a href="/delete_character/<%= @the_character.id%>">
+    Delete character
+  </a>
+</div>
+
+<hr>
+  <form action="/modify_character_record<%= @the_character.id%>" method="post">
+    <div>
+      <label for="name_field">Name</label>
+      <input id="name_field" type="text" name="name" value="<%= @the_character.name %>">
+    </div>
+
+    <div>
+      <label for="image_field">Image</label>
+      <input id="image_field" type="text" name="image" value="<%= @the_character.image %>">
+    </div>
+
+    <button>
+      Update character
+    </button>
+  </form>
+</hr>
+
+<hr>
+
+<dl>
+  <dt>
+    Name
+  </dt>
+  <dd>
+    <%= @the_character.name %>
+  </dd>
+
+  <dt>
+    Image
+  </dt>
+  <dd>
+    <img src="<%= @the_character.image %>" style="width:250px;">
+  </dd>
+
+</dl>

@@ -1,0 +1,66 @@
+<h1>
+  List of all characters
+</h1>
+
+<form action="/insert_character_record" method="post">
+  <div>
+    <label for="name_field">Name</label>
+    <input id="name_field" type="text" name="name">
+  </div>
+
+  <div>
+    <label for="image_field">Image</label>
+    <input id="image_field" type="text" name="image">
+  </div>
+
+  <button>
+    Create character
+  </button>
+</form>
+
+<hr>
+
+<table border="1">
+  <tr>
+    <th>
+      ID
+    </th>
+
+    <th>
+      Image
+    </th>
+
+    <th>
+      Name
+    </th>
+
+    <th>
+    </th>
+  </tr>
+
+  <% @list_of_characters.order({:dob => :desc}).each do |character| %>
+  <tr>
+    <td>
+      <%= character.id %>
+    </td>
+
+    <td>
+      <img src="<%= character.image %>" style="width:250px;">
+    </td>
+
+    <td>
+      <%= character.name %>
+    </td>
+
+    <td>
+      <%= character.dob %>
+    </td>
+
+    <td>
+      <a href="/characters/<%= character.id %>">
+        Show details
+      </a>
+    </td>
+  </tr>
+  <% end %>
+</table>
