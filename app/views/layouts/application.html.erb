@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Rails Template</title>
+    <title>Bulletin Board 2</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -11,6 +11,33 @@
   </head>
 
   <body>
+    <nav>
+      <div><a href="/">Bulletin Board</a></div>
+
+      <% if current_user != nil %>
+        <div><a href="/users/sign_out">Sign out</a></div
+        <div><a href="/users/edit">Edit</a></div>
+
+      <% else %>
+        <div><a href="/users/sign_up">Sign up</a></div>
+        <div><a href="/users/sign_in">Sign in</a></div>
+      <% end %>
+    </nav>
+
+    <hr>
+
+    <% if notice.present? %>
+      <div style="color: green">
+        <%= notice %>
+      </div>
+    <% end %>
+
+    <% if alert.present? %>
+      <div style="color: red">
+        <%= alert %>
+      </div>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>
