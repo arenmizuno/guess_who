@@ -38,7 +38,7 @@
     </th>
   </tr>
 
-  <% @list_of_characters.order({:dob => :desc}).each do |character| %>
+  <% @list_of_characters.order({:name => :desc}).each do |character| %>
   <tr>
     <td>
       <%= character.id %>
@@ -50,10 +50,6 @@
 
     <td>
       <%= character.name %>
-    </td>
-
-    <td>
-      <%= character.dob %>
     </td>
 
     <td>
