@@ -1,0 +1,141 @@
+<h1>Game in Progress</h1>
+
+<h2>Current Turn: <%= @game.current_turn.capitalize %></h2>
+
+<!-- Ask a Question -->
+<h2>Ask a Question</h2>
+<form action="<%= ask_question_path(game_id: @game.id) %>" method="post">
+  <label for="question">Question:</label>
+  <input type="text" name="question" required>
+  <button type="submit">Submit</button>
+</form>
+
+<!-- Guess the Opponent -->
+<h2>Make a Guess</h2>
+<form action="<%= guess_answer_path(game_id: @game.id) %>" method="post">
+  <label for="guessed_character_id">Who is your opponent's champion?</label>
+  <select name="guessed_character_id">
+    <% @characters.each do |character| %>
+      <option value="<%= character.id %>"><%= character.name %></option>
+    <% end %>
+  </select>
+  <button type="submit">Guess</button>
+</form>
+
+<!-- Question Table -->
+<div style="display: flex; justify-content: space-between; margin-top: 20px;">
+  <!-- Player 1's Questions -->
+  <div style="width: 45%;">
+    <h2>Player 1's Questions</h2>
+    <table border="1" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @questions.where(asked_by: "player1").each do |q| %>
+          <tr>
+            <td><%= q.question_text %></td>
+            <td>
+              <% if q.response.present? %>
+                <%= q.response %>
+              <% elsif @game.current_turn == "player2" %>
+                <form action="<%= answer_question_path(game_id: @game.id) %>" method="post">
+                  <input type="hidden" name="question_id" value="<%= q.id %>">
+                  <select name="response">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Maybe">Maybe</option>
+                  </select>
+                  <button type="submit">Submit</button>
+                </form>
+              <% else %>
+                Waiting for response...
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Player 2's Questions -->
+  <div style="width: 45%;">
+    <h2>Player 2's Questions</h2>
+    <table border="1" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @questions.where(asked_by: "player2").each do |q| %>
+          <tr>
+            <td><%= q.question_text %></td>
+            <td>
+              <% if q.response.present? %>
+                <%= q.response %>
+              <% elsif @game.current_turn == "player1" %>
+                <form action="<%= answer_question_path(game_id: @game.id) %>" method="post">
+                  <input type="hidden" name="question_id" value="<%= q.id %>">
+                  <select name="response">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Maybe">Maybe</option>
+                  </select>
+                  <button type="submit">Submit</button>
+                </form>
+              <% else %>
+                Waiting for response...
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Character Board -->
+<h2>Character Board</h2>
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+
+  <% @characters.each do |character| %>
+    <% game_character_selection = @game.game_character_selections.find_by(character_id: character.id) %>
+    
+    <% is_eliminated = if @game.current_turn == "player1"
+                          game_character_selection&.excluded_1
+                        else
+                          game_character_selection&.excluded_2
+                        end
+    %>
+
+    <div style="border: 2px solid <%= is_eliminated ? 'red' : 'black' %>; padding: 10px; text-align: center;">
+      <% if character.photo.attached? %>
+        <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
+      <% end %>
+      <p><%= character.name %></p>
+
+      <% unless is_eliminated %>
+        <form action="<%= eliminate_character_path(game_id: @game.id) %>" method="post" style="margin-top: 5px;">
+          <input type="hidden" name="character_id" value="<%= character.id %>">
+          <button type="submit">Eliminate</button>
+        </form>
+      <% else %>
+        <p style="color: red;">Eliminated</p>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>
+
+<!-- Switch Turn Button - Added Below Character Board -->
+<% if session[:elimination_phase] && session[:asking_player] == @game.current_turn %>
+  <h2>Finished Eliminating?</h2>
+  <form action="<%= switch_turn_path(game_id: @game.id) %>" method="post">
+    <button type="submit">Switch Turn</button>
+  </form>
+<% end %>

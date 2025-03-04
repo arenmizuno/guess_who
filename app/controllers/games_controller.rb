@@ -1,6 +1,6 @@
 class GamesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_game, only: [:select_champion, :chose_champion, :ask_question, :guess_answer]
+  before_action :set_game, only: [:play, :select_champion, :chose_champion, :ask_question, :answer_question, :eliminate_character, :guess_answer]
 
   # Step 1: Show the game setup page
   def new
@@ -22,56 +22,161 @@ class GamesController < ApplicationController
       selected_character_ids.each do |character_id|
         GameCharacterSelection.create!(game_id: @game.id, character_id: character_id)
       end
-      redirect_to("/games/select_champion/#{@game.id}")
+      redirect_to select_champion_path(game_id: @game.id)
     else
       flash[:alert] = "There was an error creating the game."
       render template: "game_templates/new"
     end
   end
 
+  # Step 3: Select champions for both players
   def select_champion
     @characters = Character.where(id: @game.game_character_selections.pluck(:character_id))
-  
+
     if @game.elected_1.nil?
       @player_turn = "Player 1"
     elsif @game.elected_2.nil?
       @player_turn = "Player 2"
     else
       flash[:notice] = "Both champions selected! The game begins."
-      redirect_to game_path(@game) and return
+      redirect_to play_game_path(@game) and return
     end
-  
+
     render template: "game_templates/select_champion"
   end
 
   def chose_champion
     selected_character_id = params[:champion_id].to_i
-  
-    # Ensure the selected character is part of the game
     game_character_selection = @game.game_character_selections.find_by(character_id: selected_character_id)
-  
+
     unless game_character_selection
       flash[:alert] = "Invalid character selection."
       redirect_to select_champion_path(game_id: @game.id) and return
     end
-  
+
     if @game.elected_1.nil?
-      # First selection is for Player 1
       @game.update!(elected_1: selected_character_id)
       flash[:notice] = "Player 1's champion selected. Now it's Player 2's turn."
       redirect_to select_champion_path(game_id: @game.id)
-  
+
     elsif @game.elected_2.nil?
-      # Player 2 can pick any champion, even if it's the same as Player 1's
       @game.update!(elected_2: selected_character_id)
       flash[:notice] = "Both champions selected! The game begins."
-      redirect_to game_path(@game)
-  
+      redirect_to play_game_path(@game)
     else
       flash[:alert] = "Champions have already been selected."
-      redirect_to game_path(@game)
+      redirect_to play_game_path(@game)
     end
   end
+
+  # Step 4: Play Game (Main Screen)
+  def play
+    @characters = Character.where(id: @game.game_character_selections.pluck(:character_id))
+    @questions = @game.questions.order(created_at: :asc)
+
+    render template: "game_templates/play"
+  end
+
+  # Step 5: Ask a Question (Stores without a response)
+  def ask_question
+    question_text = params[:question]
   
+    if question_text.blank?
+      flash[:alert] = "You must enter a question."
+      redirect_to play_game_path(@game) and return
+    end
   
+    Question.create!(
+      game_id: @game.id,
+      question_text: question_text,
+      response: nil,
+      asked_by: @game.current_turn
+    )
+  
+    # Store in session: After a question is asked, the turn does NOT immediately switch.
+    session[:elimination_phase] = true
+    session[:asking_player] = @game.current_turn
+  
+    flash[:notice] = "Question asked! The opponent must answer."
+    redirect_to play_game_path(@game)
+  end  
+
+  # Step 6: Answer a Question
+  def answer_question
+    question = Question.find(params[:question_id])
+  
+    if question.response.present?
+      flash[:alert] = "This question has already been answered."
+      redirect_to play_game_path(@game) and return
+    end
+  
+    question.update!(response: params[:response])
+  
+    # Do NOT switch turns immediately - allow elimination phase
+    flash[:notice] = "Response recorded! Now the original player can eliminate characters."
+    redirect_to play_game_path(@game)
+  end
+  
+
+  # Step 7: Eliminate a Character
+  def eliminate_character
+    character_id = params[:character_id].to_i
+    game_character_selection = @game.game_character_selections.find_by(character_id: character_id)
+  
+    unless game_character_selection
+      flash[:alert] = "Invalid character selection."
+      redirect_to play_game_path(@game) and return
+    end
+  
+    if session[:asking_player] == "player1"
+      game_character_selection.update!(excluded_1: true)
+    else
+      game_character_selection.update!(excluded_2: true)
+    end
+  
+    flash[:notice] = "Character eliminated! When you're done, switch turns."
+    redirect_to play_game_path(@game)
+  end
+  
+  def switch_turn
+    if session[:elimination_phase]
+      # Reset session variables and switch turn
+      session.delete(:elimination_phase)
+      session.delete(:asking_player)
+  
+      @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
+  
+      flash[:notice] = "Turn switched! Now it's the other player's turn."
+    else
+      flash[:alert] = "You can only switch turns after eliminating characters."
+    end
+  
+    redirect_to play_game_path(@game)
+  end
+  
+
+  # Step 8: Guess the Opponent’s Champion
+  def guess_answer
+    guessed_character_id = params[:guessed_character_id].to_i
+
+    if guessed_character_id == @game.elected_1 || guessed_character_id == @game.elected_2
+      flash[:notice] = "Correct! Game over."
+      @game.update!(status: "finished", winner: guessed_character_id)
+    else
+      flash[:alert] = "Wrong guess! Keep playing."
+    end
+
+    redirect_to play_game_path(@game)
+  end
+
+  private
+
+  def set_game
+    @game = Game.find_by(id: params[:game_id])
+
+    unless @game
+      flash[:alert] = "Game not found."
+      redirect_to start_game_path
+    end
+  end
 end

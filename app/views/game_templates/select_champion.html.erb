@@ -1,53 +1,37 @@
-<h1>Select Your Champion</h1>
+<h1><%= @player_turn %> - Select Your Champion</h1>
 
-<% if current_user == @game.player1 %>
-  <h2>Player 1 - Select Your Champion</h2>
+<form action="<%= chose_champion_path(game_id: @game.id) %>" method="post">
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Character Name</th>
+        <th>Photo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @characters.each do |character| %>
+        <tr>
+          <td>
+            <input type="radio" name="champion_id" value="<%= character.id %>" id="character_<%= character.id %>">
+          </td>
+          <td>
+            <label for="character_<%= character.id %>"><%= character.name %></label>
+          </td>
+          <td>
+            <% if character.photo.attached? %>
+              <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
+            <% else %>
+              <p>No image available</p>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
 
-  <!-- Form for selecting Player 1's Champion -->
-  <form action="/games/<%= @game.id %>/chose_champion" method="post">
-    <% @characters.each do |selection| %>
-      <div>
-        <input type="radio" name="player1_champion" value="<%= selection.id %>" id="character_<%= selection.id %>">
-        <label for="character_<%= selection.id %>"><%= selection.name %></label>
+  <!-- CSRF Token for Security -->
+  <%= csrf_meta_tags %>
 
-        <% if selection.photo.attached? %>
-          <%= image_tag selection.photo, alt: selection.name, style: "width: 100px; height: 100px;" %>
-        <% else %>
-          <p>No image available</p>
-        <% end %>
-      </div>
-    <% end %>
-
-    <!-- CSRF Token for POST request -->
-    <%= csrf_meta_tags %>
-
-    <button type="submit">Confirm Champion</button>
-  </form>
-
-<% elsif current_user == @game.player2 %>
-  <h2>Player 2 - Select Your Champion</h2>
-
-  <!-- Form for selecting Player 2's Champion -->
-  <form action="/games/<%= @game.id %>/chose_champion" method="post">
-    <% @characters.each do |selection| %>
-      <div>
-        <input type="radio" name="player2_champion" value="<%= selection.id %>" id="character_<%= selection.id %>">
-        <label for="character_<%= selection.id %>"><%= selection.name %></label>
-
-        <% if selection.photo.attached? %>
-          <%= image_tag selection.photo, alt: selection.name, style: "width: 100px; height: 100px;" %>
-        <% else %>
-          <p>No image available</p>
-        <% end %>
-      </div>
-    <% end %>
-
-    <!-- CSRF Token for POST request -->
-    <%= csrf_meta_tags %>
-
-    <button type="submit">Confirm Champion</button>
-  </form>
-
-<% else %>
-  <p>You are not authorized to select a champion for this game.</p>
-<% end %>
+  <button type="submit">Confirm Champion</button>
+</form>
