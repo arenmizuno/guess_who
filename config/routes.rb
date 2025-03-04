@@ -12,7 +12,8 @@ Rails.application.routes.draw do
   # Game Routes
   get("/start_game", { controller: "games", action: "new" })   
   post("/create_game", { controller: "games", action: "create" }) 
-  get("/games/:id/select_champion", { controller: "games", action: "select_champion" }, as: :select_champion_game)
+  get("/games/:id/select_champion", { controller: "games", action: "select_champion" })
+  post("/games/:id/chose_champion", { controller: "games", action: "chose_champion" })
   post("/games/:id/ask_question", { controller: "games", action: "ask_question" })
   post("/games/:id/guess_answer", { controller: "games", action: "guess_answer" })
 
