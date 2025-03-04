@@ -1,6 +1,7 @@
 class GamesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_game, only: [:play, :select_champion, :chose_champion, :ask_question, :answer_question, :eliminate_character, :guess_answer]
+  before_action :set_game, only: [:play, :select_champion, :chose_champion, :ask_question, :answer_question, :eliminate_character]
+
 
   # Step 1: Show the game setup page
   def new
@@ -80,35 +81,83 @@ class GamesController < ApplicationController
     render template: "game_templates/play"
   end
   
-
-  # Step 5: Ask a Question (Stores without a response)
+# Step 5: Ask Question (Main Screen)
   def ask_question
     if session[:turn_phase] != "ask"
       flash[:alert] = "You cannot ask a question right now."
       redirect_to play_game_path(@game) and return
     end
-  
-    question_text = params[:question]
-  
+
+    question_text = params[:question].strip
+
     if question_text.blank?
       flash[:alert] = "You must enter a question."
       redirect_to play_game_path(@game) and return
     end
-  
-    Question.create!(
-      game_id: @game.id,
-      question_text: question_text,
-      response: nil,
-      asked_by: @game.current_turn
-    )
-  
-    # Switch turn for the opponent to answer
-    session[:turn_phase] = "answer"
-    @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
-  
-    flash[:notice] = "Question asked! The opponent must answer."
+
+    # Check if question is a champion guess
+    guess_match = question_text.match(/^Is your champion (.+)\?$/i)
+
+    if guess_match
+      guessed_name = guess_match[1].strip
+      correct_champion_id = @game.current_turn == "player1" ? @game.elected_2 : @game.elected_1
+      correct_champion = Character.find_by(id: correct_champion_id)
+
+      if correct_champion
+        response = guessed_name.downcase == correct_champion.name.downcase ? "Yes" : "No"
+
+        # Save the guess into the questions table
+        Question.create!(
+          game_id: @game.id,
+          question_text: question_text,
+          response: response,
+          asked_by: @game.current_turn
+        )
+
+        if response == "Yes"
+          # Correct guess -> End game & go to results page
+          flash[:notice] = "#{@game.current_turn.capitalize} guessed correctly and wins the game!"
+          redirect_to game_results_path(game_id: @game.id) and return
+        else
+          # Wrong guess -> Eliminate the guessed character and switch turn
+          guessed_character = Character.find_by(name: guessed_name)
+          if guessed_character
+            game_character_selection = @game.game_character_selections.find_by(character_id: guessed_character.id)
+            if @game.current_turn == "player1"
+              game_character_selection.update!(excluded_1: true)
+            else
+              game_character_selection.update!(excluded_2: true)
+            end
+          end
+
+          flash[:alert] = "Wrong guess! The character has been eliminated."
+          
+          # Switch turn back to the other player to ask a question
+          session[:turn_phase] = "ask"
+          @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
+        end
+      end
+    else
+      # If it's not a guess, save as a normal question
+      Question.create!(
+        game_id: @game.id,
+        question_text: question_text,
+        response: nil,
+        asked_by: @game.current_turn
+      )
+
+      # Switch turn for the opponent to answer
+      session[:turn_phase] = "answer"
+      @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
+
+      flash[:notice] = "Question asked! The opponent must answer."
+    end
+
     redirect_to play_game_path(@game)
   end
+
+  
+  
   
   # Step 6: Answer a Question
   def answer_question
@@ -184,23 +233,26 @@ class GamesController < ApplicationController
     flash[:notice] = "Turn switched! Now it's the other player's turn to ask a question."
     redirect_to play_game_path(@game)
   end
+
+  def results
+    @game = Game.find_by(id: params[:game_id])
   
-  # Step 8: Guess the Opponent’s Champion
-  def guess_answer
-    guessed_character_id = params[:guessed_character_id].to_i
-
-    if guessed_character_id == @game.elected_1 || guessed_character_id == @game.elected_2
-      flash[:notice] = "Correct! Game over."
-      @game.update!(status: "finished", winner: guessed_character_id)
-    else
-      flash[:alert] = "Wrong guess! Keep playing."
+    unless @game
+      flash[:alert] = "Game not found."
+      redirect_to start_game_path and return
     end
-
-    redirect_to play_game_path(@game)
+  
+    # Determine the last player to guess correctly
+    last_correct_guess = @game.questions.where(response: "Yes").order(created_at: :desc).first
+    @winner = last_correct_guess&.asked_by
+  
+    @champion_1 = Character.find_by(id: @game.elected_1)
+    @champion_2 = Character.find_by(id: @game.elected_2)
+  
+    render template: "game_templates/results"
   end
-
-  private
-
+  
+  
   private
 
   def set_game

@@ -3,24 +3,14 @@
 <h2>Current Turn: <%= @game.current_turn.capitalize %></h2>
 
 <!-- Ask a Question -->
-<h2>Ask a Question</h2>
-<form action="<%= ask_question_path(game_id: @game.id) %>" method="post">
-  <label for="question">Question:</label>
-  <input type="text" name="question" required>
-  <button type="submit">Submit</button>
-</form>
-
-<!-- Guess the Opponent -->
-<h2>Make a Guess</h2>
-<form action="<%= guess_answer_path(game_id: @game.id) %>" method="post">
-  <label for="guessed_character_id">Who is your opponent's champion?</label>
-  <select name="guessed_character_id">
-    <% @characters.each do |character| %>
-      <option value="<%= character.id %>"><%= character.name %></option>
-    <% end %>
-  </select>
-  <button type="submit">Guess</button>
-</form>
+<% if session[:turn_phase] == "ask" %>
+  <h2>Ask a Question</h2>
+  <form action="<%= ask_question_path(game_id: @game.id) %>" method="post">
+    <label for="question">Question:</label>
+    <input type="text" name="question" required>
+    <button type="submit">Submit</button>
+  </form>
+<% end %>
 
 <!-- Question Table -->
 <div style="display: flex; justify-content: space-between; margin-top: 20px;">
@@ -101,12 +91,13 @@
 
 <!-- Character Board -->
 <h2>Character Board</h2>
-<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+<% current_viewing_player = session[:asking_player] || @game.current_turn %>
 
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
   <% @characters.each do |character| %>
     <% game_character_selection = @game.game_character_selections.find_by(character_id: character.id) %>
     
-    <% is_eliminated = if session[:asking_player] == "player1"
+    <% is_eliminated = if current_viewing_player == "player1"
                           game_character_selection&.excluded_1
                         else
                           game_character_selection&.excluded_2
@@ -129,10 +120,9 @@
       <% end %>
     </div>
   <% end %>
-
 </div>
 
-<!-- Switch Turn Button - Only Shows After Elimination Phase -->
+<!-- Switch Turn Button -->
 <% if @game && session[:elimination_phase] && session[:asking_player] == @game.current_turn %>
   <h2>Finished Eliminating?</h2>
   <form action="<%= switch_turn_path(game_id: @game.id) %>" method="post">

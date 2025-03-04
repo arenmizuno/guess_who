@@ -26,8 +26,9 @@ Rails.application.routes.draw do
   post("/games/:game_id/ask_question", { controller: "games", action: "ask_question", as: :ask_question })
   post("/games/:game_id/answer_question", { controller: "games", action: "answer_question", as: :answer_question })
   post("/games/:game_id/eliminate_character", { controller: "games", action: "eliminate_character", as: :eliminate_character })
-  post("/games/:game_id/guess_answer", { controller: "games", action: "guess_answer", as: :guess_answer })
   post("/games/:game_id/switch_turn", { controller: "games", action: "switch_turn", as: :switch_turn })
+  get("/games/:game_id/results", { controller: "games", action: "results", as: :game_results })
+
 
 
 

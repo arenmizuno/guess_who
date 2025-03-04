@@ -1,0 +1,38 @@
+<h1>Game Over!</h1>
+
+<% if @winner %>
+  <h2>Winner: <%= @winner.capitalize %></h2>
+<% else %>
+  <h2>Game ended without a winner</h2>
+<% end %>
+
+<div style="display: flex; justify-content: space-around;">
+  <div>
+    <h3>Player 1's Champion</h3>
+    <% if @champion_1 %>
+      <p><%= @champion_1.name %></p>
+      <% if @champion_1.photo.attached? %>
+        <img src="<%= rails_blob_path(@champion_1.photo, only_path: true) %>" alt="<%= @champion_1.name %>" style="width: 150px; height: 150px;">
+      <% end %>
+    <% else %>
+      <p>No champion selected</p>
+    <% end %>
+  </div>
+
+  <div>
+    <h3>Player 2's Champion</h3>
+    <% if @champion_2 %>
+      <p><%= @champion_2.name %></p>
+      <% if @champion_2.photo.attached? %>
+        <img src="<%= rails_blob_path(@champion_2.photo, only_path: true) %>" alt="<%= @champion_2.name %>" style="width: 150px; height: 150px;">
+      <% end %>
+    <% else %>
+      <p>No champion selected</p>
+    <% end %>
+  </div>
+</div>
+
+<!-- Restart Game -->
+<a href="<%= start_game_path %>">
+  <button>Start a New Game</button>
+</a>
