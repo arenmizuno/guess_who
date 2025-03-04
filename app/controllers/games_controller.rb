@@ -73,12 +73,21 @@ class GamesController < ApplicationController
   def play
     @characters = Character.where(id: @game.game_character_selections.pluck(:character_id))
     @questions = @game.questions.order(created_at: :asc)
-
+  
+    # Initialize turn phase when game starts
+    session[:turn_phase] ||= "ask"
+  
     render template: "game_templates/play"
   end
+  
 
   # Step 5: Ask a Question (Stores without a response)
   def ask_question
+    if session[:turn_phase] != "ask"
+      flash[:alert] = "You cannot ask a question right now."
+      redirect_to play_game_path(@game) and return
+    end
+  
     question_text = params[:question]
   
     if question_text.blank?
@@ -93,15 +102,21 @@ class GamesController < ApplicationController
       asked_by: @game.current_turn
     )
   
-    # Switch turn to the other player so they can answer
+    # Switch turn for the opponent to answer
+    session[:turn_phase] = "answer"
     @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
   
     flash[:notice] = "Question asked! The opponent must answer."
     redirect_to play_game_path(@game)
-  end   
-
+  end
+  
   # Step 6: Answer a Question
   def answer_question
+    if session[:turn_phase] != "answer"
+      flash[:alert] = "You cannot answer a question right now."
+      redirect_to play_game_path(@game) and return
+    end
+  
     question = Question.find(params[:question_id])
   
     if question.response.present?
@@ -111,18 +126,25 @@ class GamesController < ApplicationController
   
     question.update!(response: params[:response])
   
-    # Set session to allow eliminations & switch back to asking player
+    # Enable elimination phase and ensure the original player can eliminate characters
+    session[:turn_phase] = "eliminate"
     session[:elimination_phase] = true
     session[:asking_player] = question.asked_by
-  
     @game.update!(current_turn: question.asked_by)
   
     flash[:notice] = "Response recorded! Now the original player can eliminate characters."
     redirect_to play_game_path(@game)
   end
+  
+  
 
   # Step 7: Eliminate a Character
   def eliminate_character
+    if session[:turn_phase] != "eliminate"
+      flash[:alert] = "You cannot eliminate characters right now."
+      redirect_to play_game_path(@game) and return
+    end
+  
     character_id = params[:character_id].to_i
     game_character_selection = @game.game_character_selections.find_by(character_id: character_id)
   
@@ -137,31 +159,32 @@ class GamesController < ApplicationController
       game_character_selection.update!(excluded_2: true)
     end
   
+    # Make sure switch turn button appears
+    session[:elimination_phase] = true
+  
     flash[:notice] = "Character eliminated! When you're done, switch turns."
     redirect_to play_game_path(@game)
   end
   
   def switch_turn
     @game = Game.find_by(id: params[:game_id])
-  
-    if session[:elimination_phase]
-      # Reset session variables and switch turn
-      session.delete(:elimination_phase)
-      session.delete(:asking_player)
-  
-      @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
-  
-      flash[:notice] = "Turn switched! Now it's the other player's turn."
-    else
+
+    if session[:turn_phase] != "eliminate"
       flash[:alert] = "You can only switch turns after eliminating characters."
+      redirect_to play_game_path(@game) and return
     end
   
+    # Reset session and switch turn to next player's question phase
+    session.delete(:elimination_phase)
+    session.delete(:asking_player)
+    session[:turn_phase] = "ask"
+  
+    @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
+  
+    flash[:notice] = "Turn switched! Now it's the other player's turn to ask a question."
     redirect_to play_game_path(@game)
   end
   
-  
-  
-
   # Step 8: Guess the Opponent’s Champion
   def guess_answer
     guessed_character_id = params[:guessed_character_id].to_i
