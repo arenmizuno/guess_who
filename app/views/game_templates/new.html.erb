@@ -1,54 +1,43 @@
 <h1>Game Setup</h1>
 
-<% if current_user == @player1 %>
-  <h2>Select Player 2</h2>
+<!-- Form to start the game -->
+<form action="/create_game" method="post" enctype="multipart/form-data">
   
-  <!-- Form to start the game -->
-  <form action="/create_game" method="post" enctype="multipart/form-data">
-    
-    <!-- Player 2 Selection -->
-    <label for="player2_id">Select Player 2</label>
-    <select name="player2_id" id="player2_id">
-      <% User.where.not(id: current_user.id).each do |user| %>
-        <option value="<%= user.id %>"><%= user.email %></option>
-      <% end %>
-    </select>
-    
-    <h3>Select 15 Characters for the Game</h3>
+  <h3>Select 15 Characters for the Game</h3>
 
-    <!-- Table for displaying characters -->
-    <table style="width: 100%; border: 10px ; border-collapse: collapse;">
-      <thead>
+  <!-- Table for displaying characters -->
+  <table style="width: 100%; border: 10px; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th style="text-align: left;">Select</th>
+        <th style="text-align: left;">Character Name</th>
+        <th style="text-align: left;">Photo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @characters.each do |character| %>
         <tr>
-          <th style="text-align: left;">Select</th>
-          <th style="text-align: left;">Character Name</th>
-          <th style="text-align: left;">Photo</th>
+          <td>
+            <input type="checkbox" name="selected_characters[]" value="<%= character.id %>" id="character_<%= character.id %>">
+          </td>
+          <td>
+            <label for="character_<%= character.id %>"><%= character.name %></label>
+          </td>
+          <td>
+            <% if character.photo.attached? %>
+              <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
+            <% else %>
+              <p>No image available</p>
+            <% end %>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        <% @characters.each do |character| %>
-          <tr>
-            <td>
-              <input type="checkbox" name="selected_characters[]" value="<%= character.id %>" id="character_<%= character.id %>">
-            </td>
-            <td>
-              <label for="character_<%= character.id %>"><%= character.name %></label>
-            </td>
-            <td>
-              <% if character.photo.attached? %>
-                <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
-              <% else %>
-                <p>No image available</p>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+      <% end %>
+    </tbody>
+  </table>
 
-    <!-- Submit Button -->
-    <button type="submit">Start Game</button>
-  </form>
-<% else %>
-  <p>You are not authorized to start the game setup.</p>
-<% end %>
+  <!-- CSRF Token for Security -->
+  <%= csrf_meta_tags %>
+
+  <!-- Submit Button -->
+  <button type="submit">Start Game</button>
+</form>

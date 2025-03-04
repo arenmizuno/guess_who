@@ -1,6 +1,5 @@
 class CharactersController < ApplicationController
   def index
-    matching_characters = Character.all
     @list_of_characters = Character.order(name: :desc)
     render({ template: "character_templates/index" })
   end
@@ -17,7 +16,7 @@ class CharactersController < ApplicationController
   def create
     c = Character.new
     c.name = params.fetch("name")
-    c.user = current_user
+    c.created_by = current_user.id
     if params[:photo].present?
       c.photo.attach(params[:photo])
     else
@@ -37,7 +36,7 @@ class CharactersController < ApplicationController
     the_id = params.fetch("the_id")
     matching_record = Character.where({ :id => the_id})
     the_character = matching_record.at(0)
-    if the_character.user == current_user
+    if the_character.created_by == current_user.id
       the_character.destroy
       redirect_to("/characters")
     else
@@ -49,7 +48,7 @@ class CharactersController < ApplicationController
     the_id = params.fetch("the_id")
     the_character = Character.find_by(id: the_id)
   
-    if the_character.user == current_user
+    if the_character.created_by == current_user.id
       # Update the name
       the_character.update(name: params.fetch("name"))
   
@@ -64,7 +63,7 @@ class CharactersController < ApplicationController
       if the_character.save
         redirect_to("/characters/#{the_character.id}")
       else
-        render({ template: "character_templates/edit" })
+        rredirect_to("/characters/#{the_character.id}", alert: "Update failed.")
       end
     else
       redirect_to("/characters", alert: "You can only edit characters you created.")

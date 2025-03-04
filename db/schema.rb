@@ -52,28 +52,27 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_03_210014) do
   create_table "game_character_selections", force: :cascade do |t|
     t.integer "character_id"
     t.integer "game_id"
-    t.boolean "guessed_1"
-    t.boolean "guessed_2"
-    t.boolean "elected_1"
-    t.boolean "elected_2"
-    t.boolean "excluded_1"
-    t.boolean "excluded_2"
+    t.boolean "guessed_1", default: false
+    t.boolean "guessed_2", default: false
+    t.boolean "excluded_1", default: false
+    t.boolean "excluded_2", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "games", force: :cascade do |t|
-    t.integer "player1"
-    t.integer "player2"
-    t.bigint "winner"
-    t.string "status"
+    t.integer "player_id"
+    t.string "status", default: "pending"
+    t.string "current_turn", default: "player1"
+    t.integer "elected_1"
+    t.integer "elected_2"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "questions", force: :cascade do |t|
     t.integer "game_id"
-    t.integer "asked_by"
+    t.string "asked_by"
     t.string "response"
     t.string "question_text"
     t.datetime "created_at", null: false

@@ -1,87 +1,77 @@
 class GamesController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_game, only: [:select_champion, :chose_champion, :ask_question, :guess_answer]
 
-  # Step 1: Show the game setup page (for Player 2 to log in)
+  # Step 1: Show the game setup page
   def new
     @characters = Character.all
-    @player1 = current_user
-    render({ template: "game_templates/new" })
+    render template: "game_templates/new"
   end
 
-  # Step 2: Create the game after Player 2 logs in
+  # Step 2: Create the game
   def create
-    @player2 = User.find(params[:player2_id])
-
-    # Ensure Player 2 is not the same as Player 1
-    if @player2 == current_user
-      render({ template: "game_templates/new", alert: "You cannot select yourself as Player 2." })
-      return
+    selected_character_ids = params[:selected_characters] || []
+    if selected_character_ids.length != 15
+      flash[:alert] = "You must select exactly 15 characters."
+      redirect_to start_game_path and return
     end
 
-    # Ensure exactly 15 characters are selected
-    selected_character_ids = params[:selected_characters]
-    if selected_character_ids.nil? || selected_character_ids.length != 15
-      render({ template: "game_templates/new", alert: "You must select exactly 15 characters." })
-      return
-    end
-
-    # Create the game with Player 1 and Player 2
-    @game = Game.new(player1: current_user, player2: @player2, status: "pending")
+    @game = Game.new(player_id: current_user.id, status: "pending", current_turn: "player1")
 
     if @game.save
-      # Create the GameCharacterSelection records for each selected character
       selected_character_ids.each do |character_id|
         GameCharacterSelection.create!(game_id: @game.id, character_id: character_id)
       end
-      render({ template: "/game_templates/select_champion" })
-    
+      redirect_to("/games/select_champion/#{@game.id}")
     else
-      render({ template: "game_templates/new" })
+      flash[:alert] = "There was an error creating the game."
+      render template: "game_templates/new"
     end
   end
 
-  # Step 3: Show the Select Champion page for both players
   def select_champion
-    @game = Game.find(params[:id])
-
-    # Ensure only the players of this game can select their champions
-    if current_user != @game.player1 && current_user != @game.player2
-      render({ template: "game_templates/new", alert: "You are not part of this game."})
-      return
+    @characters = Character.where(id: @game.game_character_selections.pluck(:character_id))
+  
+    if @game.elected_1.nil?
+      @player_turn = "Player 1"
+    elsif @game.elected_2.nil?
+      @player_turn = "Player 2"
+    else
+      flash[:notice] = "Both champions selected! The game begins."
+      redirect_to game_path(@game) and return
     end
-
-    # Get the game characters that were selected for this game
-    character_ids = @game.game_character_selections.pluck(:character_id)
-    @characters = Character.where(id: character_ids)
-
-    # Render the page where the player can choose their champion
-    render({ template: "game_templates/select_champion" })
+  
+    render template: "game_templates/select_champion"
   end
 
   def chose_champion
-    @game = Game.find(params[:id])
-
-    # Ensure only the players of this game can select their champions
-    if current_user == @game.player1
-      # Find the selected character for Player 1
-      selected_character_id = params[:player1_champion]
-      # Set elected_1 to true for the selected character
-      game_character_selection = GameCharacterSelection.find_by(game_id: @game.id, character_id: selected_character_id)
-      game_character_selection.update(elected_1: true)
-
-    elsif current_user == @game.player2
-      # Find the selected character for Player 2
-      selected_character_id = params[:player2_champion]
-      # Set elected_2 to true for the selected character
-      game_character_selection = GameCharacterSelection.find_by(game_id: @game.id, character_id: selected_character_id)
-      game_character_selection.update(elected_2: true)
-
-    else
-      render({ template: "game_templates/select_champion", alert: "You are not authorized to select a champion for this game." })
-      return
+    selected_character_id = params[:champion_id].to_i
+  
+    # Ensure the selected character is part of the game
+    game_character_selection = @game.game_character_selections.find_by(character_id: selected_character_id)
+  
+    unless game_character_selection
+      flash[:alert] = "Invalid character selection."
+      redirect_to select_champion_path(game_id: @game.id) and return
     end
-
-    # After storing the champion, render the game details page or next step
-    render({ template: "game_templates/sn_champion" })  # Can be changed to another template based on your needs
+  
+    if @game.elected_1.nil?
+      # First selection is for Player 1
+      @game.update!(elected_1: selected_character_id)
+      flash[:notice] = "Player 1's champion selected. Now it's Player 2's turn."
+      redirect_to select_champion_path(game_id: @game.id)
+  
+    elsif @game.elected_2.nil?
+      # Player 2 can pick any champion, even if it's the same as Player 1's
+      @game.update!(elected_2: selected_character_id)
+      flash[:notice] = "Both champions selected! The game begins."
+      redirect_to game_path(@game)
+  
+    else
+      flash[:alert] = "Champions have already been selected."
+      redirect_to game_path(@game)
+    end
   end
+  
+  
 end
