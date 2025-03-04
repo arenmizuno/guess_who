@@ -15,15 +15,15 @@
 </div>
 
 <hr>
-  <form action="/modify_character_record<%= @the_character.id%>" method="post">
+  <form action="/modify_character_record/<%= @the_character.id%>" method="post" enctype="multipart/form-data">
     <div>
       <label for="name_field">Name</label>
       <input id="name_field" type="text" name="name" value="<%= @the_character.name %>">
     </div>
 
     <div>
-      <label for="image_field">Image</label>
-      <input id="image_field" type="text" name="image" value="<%= @the_character.image %>">
+      <label for="photo_field">Photo</label>
+      <input id="photo_field" type="file" name="photo">
     </div>
 
     <button>
@@ -43,10 +43,14 @@
   </dd>
 
   <dt>
-    Image
+    Photo
   </dt>
   <dd>
-    <img src="<%= @the_character.image %>" style="width:250px;">
+    <% if @the_character.photo.attached? %>
+      <%= image_tag @the_character.photo, style: "width:500px;" %>
+    <% else %>
+      No image available
+    <% end %>
   </dd>
 
 </dl>

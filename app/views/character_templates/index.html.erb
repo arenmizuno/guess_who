@@ -2,15 +2,15 @@
   List of all characters
 </h1>
 
-<form action="/insert_character_record" method="post">
+<form action="/insert_character_record" method="post" enctype="multipart/form-data">
   <div>
     <label for="name_field">Name</label>
     <input id="name_field" type="text" name="name">
   </div>
 
   <div>
-    <label for="image_field">Image</label>
-    <input id="image_field" type="text" name="image">
+    <label for="photo_field">Photo</label>
+    <input id="photo_field" type="file" name="photo">
   </div>
 
   <button>
@@ -27,7 +27,7 @@
     </th>
 
     <th>
-      Image
+      Photo
     </th>
 
     <th>
@@ -35,28 +35,44 @@
     </th>
 
     <th>
+      User
+    </th>
+
+    <th>
     </th>
   </tr>
 
-  <% @list_of_characters.order({:name => :desc}).each do |character| %>
-  <tr>
-    <td>
-      <%= character.id %>
-    </td>
+  <% if @list_of_characters.present? %>
+    <% @list_of_characters.each do |character| %>
+      <tr>
+        <td>
+          <%= character.id %>
+        </td>
 
-    <td>
-      <img src="<%= character.image %>" style="width:250px;">
-    </td>
+        <td>
+          <% if character.photo.attached? %>
+            <%= image_tag character.photo, style: "width:500px;" %>
+          <% else %>
+            No image available
+          <% end %>
+        </td>
 
-    <td>
-      <%= character.name %>
-    </td>
+        <td>
+          <%= character.name %>
+        </td>
 
-    <td>
-      <a href="/characters/<%= character.id %>">
-        Show details
-      </a>
-    </td>
-  </tr>
-  <% end %>
+        <td>
+          <%= character.user.email %>
+        </td>
+
+        <td>
+          <a href="/characters/<%= character.id %>">
+            Edit
+          </a>
+        </td>
+      </tr>
+    <% end %>
+  <% else %>
+    <p>No characters found.</p>
+  <% end %> 
 </table>
