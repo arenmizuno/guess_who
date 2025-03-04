@@ -23,10 +23,6 @@
 <table border="1">
   <tr>
     <th>
-      ID
-    </th>
-
-    <th>
       Photo
     </th>
 
@@ -46,7 +42,7 @@
     <% @list_of_characters.each do |character| %>
       <tr>
         <td>
-          <%= character.id %>
+          <%= character.name %>
         </td>
 
         <td>
@@ -55,10 +51,6 @@
           <% else %>
             No image available
           <% end %>
-        </td>
-
-        <td>
-          <%= character.name %>
         </td>
 
         <td>
