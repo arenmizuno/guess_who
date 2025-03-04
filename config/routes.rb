@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   post("/games/:game_id/switch_turn", { controller: "games", action: "switch_turn", as: :switch_turn })
 
 
+
   
   
 

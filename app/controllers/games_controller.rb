@@ -93,13 +93,12 @@ class GamesController < ApplicationController
       asked_by: @game.current_turn
     )
   
-    # Store in session: After a question is asked, the turn does NOT immediately switch.
-    session[:elimination_phase] = true
-    session[:asking_player] = @game.current_turn
+    # Switch turn to the other player so they can answer
+    @game.update!(current_turn: @game.current_turn == "player1" ? "player2" : "player1")
   
     flash[:notice] = "Question asked! The opponent must answer."
     redirect_to play_game_path(@game)
-  end  
+  end   
 
   # Step 6: Answer a Question
   def answer_question
@@ -112,11 +111,15 @@ class GamesController < ApplicationController
   
     question.update!(response: params[:response])
   
-    # Do NOT switch turns immediately - allow elimination phase
+    # Set session to allow eliminations & switch back to asking player
+    session[:elimination_phase] = true
+    session[:asking_player] = question.asked_by
+  
+    @game.update!(current_turn: question.asked_by)
+  
     flash[:notice] = "Response recorded! Now the original player can eliminate characters."
     redirect_to play_game_path(@game)
   end
-  
 
   # Step 7: Eliminate a Character
   def eliminate_character
@@ -139,6 +142,8 @@ class GamesController < ApplicationController
   end
   
   def switch_turn
+    @game = Game.find_by(id: params[:game_id])
+  
     if session[:elimination_phase]
       # Reset session variables and switch turn
       session.delete(:elimination_phase)
@@ -153,6 +158,8 @@ class GamesController < ApplicationController
   
     redirect_to play_game_path(@game)
   end
+  
+  
   
 
   # Step 8: Guess the Opponent’s Champion
@@ -171,12 +178,14 @@ class GamesController < ApplicationController
 
   private
 
+  private
+
   def set_game
     @game = Game.find_by(id: params[:game_id])
-
+  
     unless @game
       flash[:alert] = "Game not found."
-      redirect_to start_game_path
+      redirect_to start_game_path and return
     end
   end
 end
