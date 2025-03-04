@@ -33,7 +33,7 @@ class GamesController < ApplicationController
       selected_character_ids.each do |character_id|
         GameCharacterSelection.create!(game_id: @game.id, character_id: character_id)
       end
-      render({ template: "/games/select_champion" })
+      render({ template: "/game_templates/select_champion" })
     
     else
       render({ template: "game_templates/new" })
@@ -51,7 +51,8 @@ class GamesController < ApplicationController
     end
 
     # Get the game characters that were selected for this game
-    @characters = @game.game_character_selections.includes(:character).map(&:character)
+    character_ids = @game.game_character_selections.pluck(:character_id)
+    @characters = Character.where(id: character_ids)
 
     # Render the page where the player can choose their champion
     render({ template: "game_templates/select_champion" })
