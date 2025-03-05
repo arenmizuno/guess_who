@@ -1,43 +1,57 @@
-<h1>Game Setup</h1>
+<head>
+  <title>Game Setup</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.css">
+</head>
 
-<!-- Form to start the game -->
-<form action="/create_game" method="post" enctype="multipart/form-data">
-  
-  <h3>Select 15 Characters for the Game</h3>
+<body>
+  <div class="container mt-5">
+    <!-- Heading -->
+    <h1 class="text-center mb-4">Game Setup</h1>
 
-  <!-- Table for displaying characters -->
-  <table style="width: 100%; border: 10px; border-collapse: collapse;">
-    <thead>
-      <tr>
-        <th style="text-align: left;">Select</th>
-        <th style="text-align: left;">Character Name</th>
-        <th style="text-align: left;">Photo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @characters.each do |character| %>
-        <tr>
-          <td>
-            <input type="checkbox" name="selected_characters[]" value="<%= character.id %>" id="character_<%= character.id %>">
-          </td>
-          <td>
-            <label for="character_<%= character.id %>"><%= character.name %></label>
-          </td>
-          <td>
-            <% if character.photo.attached? %>
-              <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
-            <% else %>
-              <p>No image available</p>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+    <!-- Form to start the game -->
+    <form action="/create_game" method="post" enctype="multipart/form-data" class="mb-5">
+      <h3 class="text-center mb-4">Select 15 Characters for the Game</h3>
 
-  <!-- CSRF Token for Security -->
-  <%= csrf_meta_tags %>
+      <!-- Table for displaying characters -->
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th class="text-center">Select</th>
+            <th class="text-center">Character Name</th>
+            <th class="text-center">Photo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @characters.each do |character| %>
+            <tr>
+              <!-- Center content inside each cell -->
+              <td class="text-center align-middle">
+                <input type="checkbox" name="selected_characters[]" value="<%= character.id %>" id="character_<%= character.id %>">
+              </td>
+              <td class="text-center align-middle">
+                <label for="character_<%= character.id %>"><%= character.name %></label>
+              </td>
+              <td class="text-center align-middle">
+                <% if character.photo.attached? %>
+                  <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
+                <% else %>
+                  <p>No image available</p>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
 
-  <!-- Submit Button -->
-  <button type="submit">Start Game</button>
-</form>
+      <!-- CSRF Token for Security -->
+      <%= csrf_meta_tags %>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-success w-100">Start Game</button>
+    </form>
+  </div>
+
+  <!-- Add Bootstrap's JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+</body>

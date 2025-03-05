@@ -1,133 +1,168 @@
-<h1>Game in Progress</h1>
+<head>
+  <title>Game in Progress</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.css">
+  
+  <style>
+    /* Custom styles for red and blue background with opacity */
+    .bg-red {
+      background-color: rgba(255, 0, 0, 0.1); /* Light red with 10% opacity */
+    }
 
-<h2>Current Turn: <%= @game.current_turn.capitalize %></h2>
+    .bg-blue {
+      background-color: rgba(0, 0, 255, 0.1); /* Light blue with 10% opacity */
+    }
 
-<!-- Ask a Question -->
-<% if session[:turn_phase] == "ask" %>
-  <h2>Ask a Question</h2>
-  <form action="<%= ask_question_path(game_id: @game.id) %>" method="post">
-    <label for="question">Question:</label>
-    <input type="text" name="question" required 
-       placeholder="For final guess input: Is your champion {name}?" 
-       style="width: 20%;">
-    <button type="submit">Submit</button>
-  </form>
-<% end %>
+    /* Optional: to ensure all elements within the container stay clear */
+    .container {
+      padding: 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
 
-<!-- Question Table -->
-<div style="display: flex; justify-content: space-between; margin-top: 20px;">
-  <!-- Player 1's Questions -->
-  <div style="width: 45%;">
-    <h2>Player 1's Questions</h2>
-    <table border="1" style="width: 100%;">
-      <thead>
-        <tr>
-          <th>Question</th>
-          <th>Response</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @questions.where(asked_by: "player1").each do |q| %>
-          <tr>
-            <td><%= q.question_text %></td>
-            <td>
-              <% if q.response.present? %>
-                <%= q.response %>
-              <% elsif @game.current_turn == "player2" %>
-                <form action="<%= answer_question_path(game_id: @game.id) %>" method="post">
-                  <input type="hidden" name="question_id" value="<%= q.id %>">
-                  <select name="response">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="Maybe">Maybe</option>
-                  </select>
-                  <button type="submit">Submit</button>
+<body>
+  <!-- Container with conditional background color based on the current player -->
+  <div class="container mt-5 <%= 'bg-red' if @game.current_turn == 'player1' %><%= 'bg-blue' if @game.current_turn == 'player2' %>">
+    <!-- Heading -->
+    <h1 class="text-center mb-4">Game in Progress</h1>
+    <h2 class="text-center mb-4">Current Turn: <%= @game.current_turn.capitalize %></h2>
+
+    <!-- Ask a Question -->
+    <% if session[:turn_phase] == "ask" %>
+      <h2 class="text-center mb-4">Ask a Question</h2>
+      <form action="<%= ask_question_path(game_id: @game.id) %>" method="post" class="d-flex justify-content-center mb-5">
+        <div class="w-50">
+          <label for="question" class="form-label">Question:</label>
+          <input type="text" name="question" required placeholder="For final guess input: Is your champion {name}?" class="form-control mb-3">
+          <button type="submit" class="btn btn-primary w-100 btn-smaller">Submit</button>
+        </div>
+      </form>
+    <% end %>
+
+    <!-- Question Table -->
+    <div class="d-flex justify-content-between mb-5">
+      <!-- Player 1's Questions -->
+      <div class="w-45">
+        <h2 class="text-center mb-3">Player 1's Questions</h2>
+        <table class="table table-bordered table-striped table-sm" style="width: 90%; table-layout: fixed; margin-left: auto; margin-right: auto;">
+          <thead>
+            <tr>
+              <th class="text-center">Question</th>
+              <th class="text-center">Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @questions.where(asked_by: "player1").each do |q| %>
+              <tr>
+                <td><%= q.question_text %></td>
+                <td class="text-center">
+                  <% if q.response.present? %>
+                    <%= q.response %>
+                  <% elsif @game.current_turn == "player2" %>
+                    <form action="<%= answer_question_path(game_id: @game.id) %>" method="post" class="d-flex justify-content-center">
+                      <input type="hidden" name="question_id" value="<%= q.id %>">
+                      <select name="response" class="form-select mb-3 w-50">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                        <option value="Maybe">Maybe</option>
+                      </select>
+                      <button type="submit" class="btn btn-success btn-smaller w-100">Submit</button>
+                    </form>
+                  <% else %>
+                    Waiting for response...
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Player 2's Questions -->
+      <div class="w-45">
+        <h2 class="text-center mb-3">Player 2's Questions</h2>
+        <table class="table table-bordered table-striped table-sm" style="width: 90%; table-layout: fixed; margin-left: auto; margin-right: auto;">
+          <thead>
+            <tr>
+              <th class="text-center">Question</th>
+              <th class="text-center">Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @questions.where(asked_by: "player2").each do |q| %>
+              <tr>
+                <td><%= q.question_text %></td>
+                <td class="text-center">
+                  <% if q.response.present? %>
+                    <%= q.response %>
+                  <% elsif @game.current_turn == "player1" %>
+                    <form action="<%= answer_question_path(game_id: @game.id) %>" method="post" class="d-flex justify-content-center">
+                      <input type="hidden" name="question_id" value="<%= q.id %>">
+                      <select name="response" class="form-select mb-3 w-50">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                        <option value="Maybe">Maybe</option>
+                      </select>
+                      <button type="submit" class="btn btn-success btn-smaller w-100">Submit</button>
+                    </form>
+                  <% else %>
+                    Waiting for response...
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Character Board -->
+    <h2 class="text-center mb-4">Character Board</h2>
+    <div class="row row-cols-5 g-3">
+      <% @characters.each do |character| %>
+        <% game_character_selection = @game.game_character_selections.find_by(character_id: character.id) %>
+        
+        <% is_eliminated = if @game.current_turn == "player1"
+                              game_character_selection&.excluded_1
+                            else
+                              game_character_selection&.excluded_2
+                            end
+        %>
+
+        <div class="col">
+          <div class="card" style="text-align: center; padding: 10px;">
+            <div class="d-flex justify-content-center align-items-center" style="height: 150px;">
+              <% if character.photo.attached? %>
+                <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px; object-fit: cover;">
+              <% end %>
+            </div>
+            <div class="card-body">
+              <p class="card-text"><%= character.name %></p>
+
+              <% unless is_eliminated %>
+                <form action="<%= eliminate_character_path(game_id: @game.id) %>" method="post">
+                  <input type="hidden" name="character_id" value="<%= character.id %>">
+                  <button type="submit" class="btn btn-danger w-100">Eliminate</button>
                 </form>
               <% else %>
-                Waiting for response...
+                <p class="text-danger">Eliminated</p>
               <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Player 2's Questions -->
-  <div style="width: 45%;">
-    <h2>Player 2's Questions</h2>
-    <table border="1" style="width: 100%;">
-      <thead>
-        <tr>
-          <th>Question</th>
-          <th>Response</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @questions.where(asked_by: "player2").each do |q| %>
-          <tr>
-            <td><%= q.question_text %></td>
-            <td>
-              <% if q.response.present? %>
-                <%= q.response %>
-              <% elsif @game.current_turn == "player1" %>
-                <form action="<%= answer_question_path(game_id: @game.id) %>" method="post">
-                  <input type="hidden" name="question_id" value="<%= q.id %>">
-                  <select name="response">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="Maybe">Maybe</option>
-                  </select>
-                  <button type="submit">Submit</button>
-                </form>
-              <% else %>
-                Waiting for response...
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Character Board -->
-<h2>Character Board</h2>
-<% current_viewing_player = session[:asking_player] || @game.current_turn %>
-
-<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
-  <% @characters.each do |character| %>
-    <% game_character_selection = @game.game_character_selections.find_by(character_id: character.id) %>
-    
-    <% is_eliminated = if current_viewing_player == "player1"
-                          game_character_selection&.excluded_1
-                        else
-                          game_character_selection&.excluded_2
-                        end
-    %>
-
-    <div style="border: 2px solid <%= is_eliminated ? 'red' : 'black' %>; padding: 10px; text-align: center;">
-      <% if character.photo.attached? %>
-        <img src="<%= rails_blob_path(character.photo, only_path: true) %>" alt="<%= character.name %>" style="width: 100px; height: 100px;">
-      <% end %>
-      <p><%= character.name %></p>
-
-      <% unless is_eliminated %>
-        <form action="<%= eliminate_character_path(game_id: @game.id) %>" method="post" style="margin-top: 5px;">
-          <input type="hidden" name="character_id" value="<%= character.id %>">
-          <button type="submit">Eliminate</button>
-        </form>
-      <% else %>
-        <p style="color: red;">Eliminated</p>
+            </div>
+          </div>
+        </div>
       <% end %>
     </div>
-  <% end %>
-</div>
 
-<!-- Switch Turn Button -->
-<% if @game && session[:elimination_phase] && session[:asking_player] == @game.current_turn %>
-  <h2>Finished Eliminating?</h2>
-  <form action="<%= switch_turn_path(game_id: @game.id) %>" method="post">
-    <button type="submit">Switch Turn</button>
-  </form>
-<% end %>
+    <!-- Switch Turn Button -->
+    <% if @game && session[:elimination_phase] && session[:asking_player] == @game.current_turn %>
+      <h2 class="text-center mb-4 mt-5">Finished Eliminating?</h2>
+      <form action="<%= switch_turn_path(game_id: @game.id) %>" method="post" class="text-center mt-4">
+        <button type="submit" class="btn btn-warning w-50">Switch Turn</button>
+      </form>
+    <% end %>
+  </div>
+
+  <!-- Add Bootstrap's JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+</body>

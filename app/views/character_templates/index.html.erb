@@ -1,70 +1,77 @@
-<h1>
-  List of all characters
-</h1>
+<head>
+  <title>List of All Characters</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.css">
+</head>
 
-<form action="/insert_character_record" method="post" enctype="multipart/form-data">
-  <div>
-    <label for="name_field">Name</label>
-    <input id="name_field" type="text" name="name">
-  </div>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">List of All Characters</h1>
 
-  <div>
-    <label for="photo_field">Photo</label>
-    <input id="photo_field" type="file" name="photo">
-  </div>
+    <!-- Form to create new character -->
+    <form action="/insert_character_record" method="post" enctype="multipart/form-data" class="mb-5">
+      <!-- Centered container for the form -->
+      <div class="d-flex justify-content-center mb-3">
+        <div class="w-50">
+          <label for="name_field" class="form-label">Name</label>
+          <input id="name_field" type="text" name="name" class="form-control">
+        </div>
+      </div>
 
-  <button>
-    Create character
-  </button>
-</form>
+      <!-- Centered container for the file input -->
+      <div class="d-flex justify-content-center mb-3">
+        <div class="w-50">
+          <label for="photo_field" class="form-label">Photo</label>
+          <input id="photo_field" type="file" name="photo" class="form-control">
+        </div>
+      </div>
 
-<hr>
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-success">Create Character</button>
+      </div>
+    </form>
 
-<table border="1">
-  <tr>
-    <th>
-      Photo
-    </th>
+    <!-- Horizontal line styled to match the table width -->
+    <hr style="width: 50%; margin-left: auto; margin-right: auto;">
 
-    <th>
-      Name
-    </th>
+    <!-- Table of characters -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th class="text-center">Photo</th>
+            <th class="text-center">Name</th>
+            <th class="text-center">User</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
 
-    <th>
-      User
-    </th>
-
-    <th>
-    </th>
-  </tr>
-
-  <% if @list_of_characters.present? %>
-    <% @list_of_characters.each do |character| %>
-      <tr>
-        <td>
-          <%= character.name %>
-        </td>
-
-        <td>
-          <% if character.photo.attached? %>
-            <%= image_tag character.photo, style: "width:500px;" %>
+        <tbody>
+          <% if @list_of_characters.present? %>
+            <% @list_of_characters.each do |character| %>
+              <tr>
+                <td class="text-center align-middle">
+                  <% if character.photo.attached? %>
+                    <%= image_tag character.photo, style: "width: 150px; height: auto;" %>
+                  <% else %>
+                    No image available
+                  <% end %>
+                </td>
+                <td class="text-center align-middle"><%= character.name %></td>
+                <td class="text-center align-middle"><%= character.user.email %></td>
+                <td class="text-center align-middle">
+                  <a href="/characters/<%= character.id %>" class="btn btn-secondary btn-sm">Edit</a>
+                </td>
+              </tr>
+            <% end %>
           <% else %>
-            No image available
+            <tr><td colspan="4">No characters found.</td></tr>
           <% end %>
-        </td>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-        <td>
-          <%= character.user.email %>
-        </td>
-
-        <td>
-          <a href="/characters/<%= character.id %>">
-            Edit
-          </a>
-        </td>
-      </tr>
-    <% end %>
-  <% else %>
-    <p>No characters found.</p>
-  <% end %> 
-</table>
+  <!-- Add Bootstrap's JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+</body>

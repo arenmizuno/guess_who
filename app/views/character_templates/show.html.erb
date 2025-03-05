@@ -1,56 +1,72 @@
-<h1>
-  Character #<%= @the_character.id %> details
-</h1>
+<head>
+  <title>Character Details</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.css">
+</head>
 
-<div>
-  <a href="/characters">
-    Go back
-  </a>
-</div>
+<body>
+  <div class="container mt-5">
+    <!-- Heading -->
+    <h1 class="text-center mb-4">Character #<%= @the_character.id %> Details</h1>
 
-<div>
-  <a href="/delete_character/<%= @the_character.id%>">
-    Delete character
-  </a>
-</div>
-
-<hr>
-  <form action="/modify_character_record/<%= @the_character.id%>" method="post" enctype="multipart/form-data">
-    <div>
-      <label for="name_field">Name</label>
-      <input id="name_field" type="text" name="name" value="<%= @the_character.name %>">
+    <!-- Navigation buttons with reduced gap -->
+    <div class="d-flex justify-content-center gap-2 mb-4">
+      <a href="/characters" class="btn btn-primary">Go back</a>
+      <a href="/delete_character/<%= @the_character.id %>" class="btn btn-danger">Delete character</a>
     </div>
 
-    <div>
-      <label for="photo_field">Photo</label>
-      <input id="photo_field" type="file" name="photo">
-    </div>
+    <!-- Centered and longer HR -->
+    <hr style="width: 90%; margin-left: auto; margin-right: auto;" class="mb-5">
 
-    <button>
-      Update character
-    </button>
-  </form>
-</hr>
+    <!-- Character modification form, inputs centered -->
+    <form action="/modify_character_record/<%= @the_character.id %>" method="post" enctype="multipart/form-data" class="mb-5">
+      <div class="d-flex justify-content-center mb-3">
+        <div class="w-50">
+          <label for="name_field" class="form-label">Name</label>
+          <input id="name_field" type="text" name="name" value="<%= @the_character.name %>" class="form-control">
+        </div>
+      </div>
 
-<hr>
+      <div class="d-flex justify-content-center mb-3">
+        <div class="w-50">
+          <label for="photo_field" class="form-label">Photo</label>
+          <input id="photo_field" type="file" name="photo" class="form-control">
+        </div>
+      </div>
 
-<dl>
-  <dt>
-    Name
-  </dt>
-  <dd>
-    <%= @the_character.name %>
-  </dd>
+      <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-success">Update character</button>
+      </div>
+    </form>
 
-  <dt>
-    Photo
-  </dt>
-  <dd>
-    <% if @the_character.photo.attached? %>
-      <%= image_tag @the_character.photo, style: "width:500px;" %>
-    <% else %>
-      No image available
-    <% end %>
-  </dd>
+    <!-- Centered and longer HR -->
+    <hr style="width: 90%; margin-left: auto; margin-right: auto;" class="mb-5">
 
-</dl>
+    <!-- Character details in table format -->
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th class="text-center">Photo</th>
+          <th class="text-center">Name</th>
+          <th class="text-center">User</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center align-middle">
+            <% if @the_character.photo.attached? %>
+              <%= image_tag @the_character.photo, style: "width: 150px; height: auto;" %>
+            <% else %>
+              No image available
+            <% end %>
+          </td>
+          <td class="text-center align-middle"><%= @the_character.name %></td>
+          <td class="text-center align-middle"><%= @the_character.user.email %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Bootstrap's JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+</body>

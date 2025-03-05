@@ -1,38 +1,97 @@
-<h1>Game Over!</h1>
+<head>
+  <title>Game Over!</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.css">
+  
+  <style>
+    /* Custom styles for the page */
+    .game-over-container {
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-<% if @winner %>
-  <h2>Winner: <%= @winner.capitalize %></h2>
-<% else %>
-  <h2>Game ended without a winner</h2>
-<% end %>
+    /* Background color for the winner */
+    .bg-winner {
+      background-color: rgba(0, 255, 0, 0.1); /* Light green for winner */
+    }
 
-<div style="display: flex; justify-content: space-around;">
-  <div>
-    <h3>Player 1's Champion</h3>
-    <% if @champion_1 %>
-      <p><%= @champion_1.name %></p>
-      <% if @champion_1.photo.attached? %>
-        <img src="<%= rails_blob_path(@champion_1.photo, only_path: true) %>" alt="<%= @champion_1.name %>" style="width: 150px; height: 150px;">
-      <% end %>
+    /* Background color for the no-winner scenario */
+    .bg-no-winner {
+      background-color: rgba(255, 0, 0, 0.1); /* Light red for no winner */
+    }
+
+    /* Image styling for the champions */
+    .champion-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #ddd;
+    }
+
+    /* Flexbox for centering and spacing */
+    .champion-container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 40px;
+    }
+
+    .champion-info {
+      text-align: center;
+      width: 40%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container game-over-container mt-5 <%= 'bg-winner' if @winner %><%= 'bg-no-winner' unless @winner %>">
+    <!-- Heading -->
+    <h1 class="text-center mb-4">Game Over!</h1>
+
+    <% if @winner %>
+      <h2 class="text-center text-success">Winner: <%= @winner.capitalize %></h2>
     <% else %>
-      <p>No champion selected</p>
+      <h2 class="text-center text-danger">Game ended without a winner</h2>
     <% end %>
+
+    <!-- Champion Information -->
+    <div class="champion-container">
+      <!-- Player 1's Champion -->
+      <div class="champion-info">
+        <h3>Player 1's Champion</h3>
+        <% if @champion_1 %>
+          <p><%= @champion_1.name %></p>
+          <% if @champion_1.photo.attached? %>
+            <img src="<%= rails_blob_path(@champion_1.photo, only_path: true) %>" alt="<%= @champion_1.name %>" class="champion-img">
+          <% end %>
+        <% else %>
+          <p>No champion selected</p>
+        <% end %>
+      </div>
+
+      <!-- Player 2's Champion -->
+      <div class="champion-info">
+        <h3>Player 2's Champion</h3>
+        <% if @champion_2 %>
+          <p><%= @champion_2.name %></p>
+          <% if @champion_2.photo.attached? %>
+            <img src="<%= rails_blob_path(@champion_2.photo, only_path: true) %>" alt="<%= @champion_2.name %>" class="champion-img">
+          <% end %>
+        <% else %>
+          <p>No champion selected</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Restart Game Button -->
+    <div class="text-center mt-4">
+      <a href="<%= start_game_path %>">
+        <button class="btn btn-success btn-lg">Start a New Game</button>
+      </a>
+    </div>
   </div>
 
-  <div>
-    <h3>Player 2's Champion</h3>
-    <% if @champion_2 %>
-      <p><%= @champion_2.name %></p>
-      <% if @champion_2.photo.attached? %>
-        <img src="<%= rails_blob_path(@champion_2.photo, only_path: true) %>" alt="<%= @champion_2.name %>" style="width: 150px; height: 150px;">
-      <% end %>
-    <% else %>
-      <p>No champion selected</p>
-    <% end %>
-  </div>
-</div>
-
-<!-- Restart Game -->
-<a href="<%= start_game_path %>">
-  <button>Start a New Game</button>
-</a>
+  <!-- Add Bootstrap's JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+</body>
