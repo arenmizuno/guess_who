@@ -7,7 +7,9 @@
   <h2>Ask a Question</h2>
   <form action="<%= ask_question_path(game_id: @game.id) %>" method="post">
     <label for="question">Question:</label>
-    <input type="text" name="question" required>
+    <input type="text" name="question" required 
+       placeholder="For final guess input: Is your champion {name}?" 
+       style="width: 20%;">
     <button type="submit">Submit</button>
   </form>
 <% end %>

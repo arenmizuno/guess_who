@@ -1,3 +1,7 @@
+<head>
+  <title>Guess Who!</title>
+  <link rel="stylesheet" href="<%= asset_path('application.css') %>">
+</head>
 <h1>Guess Who!</h1>
 
 <p>This is an online version of Guess Who where you can add your own characters! </p>
@@ -6,14 +10,12 @@
 
 <% if user_signed_in? %>
   <div>
-    <h2>Start Game</h2>
     <a href="/start_game" class="btn btn-primary">
       <button>Start Game</button>
     </a>
   </div>
 
   <div>
-    <h2>Character List</h2>
     <a href="/characters" class="btn btn-secondary">
       <button>Character List</button>
     </a>

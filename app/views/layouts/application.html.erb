@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Bulletin Board 2</title>
+    <title>Guess Who!</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -23,16 +23,15 @@
       <% end %>
     </nav>
 
-    <hr>
 
     <% if notice.present? %>
-      <div style="color: green">
+      <div class="notice">
         <%= notice %>
       </div>
     <% end %>
 
     <% if alert.present? %>
-      <div style="color: red">
+      <div class="alert">
         <%= alert %>
       </div>
     <% end %>

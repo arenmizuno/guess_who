@@ -1,15 +1,133 @@
-/*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- *= require_tree .
- *= require_self
- */
+/* General body styling */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+/* Navigation bar styling */
+nav {
+  background-color: #333;
+  padding: 15px;
+  display: flex;
+  justify-content: center; /* Center align buttons */
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for links as buttons */
+nav a {
+  text-decoration: none;
+  padding: 10px 20px;
+  color: white;
+  background-color: #007bff;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  margin: 0 10px; /* Reduced space between buttons */
+  text-align: center;
+}
+
+/* Hover effect for links */
+nav a:hover {
+  background-color: #0056b3;
+}
+
+
+/* Main content styling */
+h1 {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 30px;
+  text-align: center;
+}
+
+p {
+  font-size: 18px;
+  text-align: center;
+  color: #555;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+/* Button styling for "Start Game" and "Character List" */
+button {
+  padding: 12px 25px;
+  font-size: 18px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin: 10px 0;
+  width: 200px; /* Equal button size */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Button hover effects */
+button:hover {
+  background-color: #218838;
+  transform: translateY(-2px); /* Add a subtle lifting effect */
+}
+
+/* Green notice box */
+.notice {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  margin: 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Red alert box */
+.alert {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  margin: 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+hr {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border: 1px solid #ccc;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Center align all content */
+.container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+
+/* Responsiveness */
+@media screen and (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav a {
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: left;
+  }
+
+  button {
+    width: 80%;
+    margin: 10px auto;
+  }
+}
